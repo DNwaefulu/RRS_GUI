@@ -5,7 +5,10 @@
 #include <FL/Fl_Menu_Bar.H> 
 #include <FL/Fl_Button.H> 
 #include <FL/Fl_Input.H>
+#include <string>
+#include <vector>
 
+using namespace std;
 //to have consistent window sizes
 #define w_width 300
 #define w_height 300
@@ -22,6 +25,10 @@ void BC_main_menu(Fl_Widget*, void*);
 void PB_main_menu(Fl_Widget*, void*);
 void create_new_customer(Fl_Widget*, void*);
 void create_new_sales_assoc(Fl_Widget*, void*);
+void create_new_assoc_done(Fl_Widget*, void* text);
+void assoc_done(Fl_Widget*, void*);
+void create_new_customer_done(Fl_Widget*, void* text);
+void customer_done(Fl_Widget*, void*);
 
 void SA_main_menu(Fl_Widget*, void*);
 
@@ -30,6 +37,28 @@ void return_window(Fl_Window* window);
 
 //first_window
 Fl_Window *main_logon = new Fl_Window(w_width, w_height, "Logon");
+
+class Customer
+{
+public:
+	Customer(const char* p_name) : name(p_name) {}
+	const char* get_name() { return name; }
+private:
+	const char* name;
+};
+
+vector<Customer> customers;
+
+class SalesAssoc
+{
+public:
+	SalesAssoc(const char* p_name) : name(p_name) {}
+	const char* get_name() { return name; }
+private:
+	const char* name;
+};
+
+vector<SalesAssoc> assocs;
 
 void select_user()
 {
@@ -145,7 +174,7 @@ void PB_main_menu(Fl_Widget*, void*)
 
 	Fl_Button *new_customer = new Fl_Button(50, 75, 200, 50, "Create New Customer");
 	Fl_Button *new_sales_assoc = new Fl_Button(50, 150, 200, 50, "Create New Sales Associate");
-	
+
 	new_customer->callback(create_new_customer);
 	new_sales_assoc->callback(create_new_sales_assoc);
 
@@ -166,36 +195,89 @@ void pb_close_window(Fl_Widget* window, void*)
 	return_window(pb_main_menu);
 }
 
+Fl_Window* create_customer;
+
 void create_new_customer(Fl_Widget*, void*)
 {
 	pb_main_menu->hide();
-	
-	Fl_Window *main_menu = new Fl_Window(w_width, w_height, "Create Customer Menu");
+
+	create_customer = new Fl_Window(w_width, w_height, "Create Customer Menu");
 	Fl_Input *customer_name = new Fl_Input(140, 50, 150, 25, "Customer Name");
 	Fl_Button *done = new Fl_Button(225, 200, 50, 50, "Done");
 
-	main_menu->callback(pb_close_window);
+	create_customer->callback(pb_close_window);
 
-	main_menu->end();
-	main_menu->show();
+	customer_name->callback(create_new_customer_done);
+	done->callback(customer_done);
+
+	create_customer->end();
+	create_customer->show();
 
 	Fl::run();
 }
+
+void customer_done(Fl_Widget*, void*)
+{
+	create_customer->hide();
+	pb_main_menu->show();
+
+	int size = customers.size();
+
+	printf("current customers: \n");
+	for(int i = 0; i < size; i++)
+	{
+		printf("- %s\n", customers[i].get_name());
+	}
+}
+
+void create_new_customer_done(Fl_Widget* text, void*)
+{
+	const char* name = ((Fl_Input*)text)->value();
+	Customer customer(name);
+	customers.push_back(customer);
+	printf("Customer created: %s\n\n", name); //for debug
+}
+
+Fl_Window* create_sa;
 
 void create_new_sales_assoc(Fl_Widget*, void*)
 {
 	pb_main_menu->hide();
 
-	Fl_Window *main_menu = new Fl_Window(w_width, w_height, "Create Associate Menu");
+	create_sa = new Fl_Window(w_width, w_height, "Create Associate Menu");
 	Fl_Button *done = new Fl_Button(225, 200, 50, 50, "Done");
 	Fl_Input *assoc_name = new Fl_Input(140, 50, 150, 25, "Associate Name");
 
-	main_menu->callback(pb_close_window);
+	create_sa->callback(pb_close_window);
 
-	main_menu->end();
-	main_menu->show();
+	assoc_name->callback(create_new_assoc_done);
+	done->callback(assoc_done);
+
+	create_sa->end();
+	create_sa->show();
 
 	Fl::run();
+}
+
+void assoc_done(Fl_Widget*, void*)
+{
+	create_sa->hide();
+	pb_main_menu->show();
+
+	int size = assocs.size();
+	printf("current assocs: \n");
+	for(int i = 0; i < size; i++)
+	{
+		printf("- %s\n", assocs[i].get_name());
+	}
+}
+
+void create_new_assoc_done(Fl_Widget* text, void*)
+{
+	const char* name = ((Fl_Input*)text)->value();
+	SalesAssoc assoc(name);
+	assocs.push_back(assoc);
+	printf("Assoc created: %s\n\n", name); //for debug
 }
 
 void SA_main_menu(Fl_Widget*, void*)
@@ -215,6 +297,7 @@ void SA_main_menu(Fl_Widget*, void*)
 
 	Fl::run();
 }
+
 
 
 int main()
