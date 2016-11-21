@@ -38,6 +38,34 @@ void return_window(Fl_Window* window);
 //first_window
 Fl_Window *main_logon = new Fl_Window(w_width, w_height, "Logon");
 
+class RobotPart {
+public:
+	RobotPart();
+
+	const char* get_name();
+	const char* get_part_number();
+	const char* get_type();
+	double get_weight();
+	double get_cost();
+	const char* get_description();
+protected:
+	const char* name;
+	const char* part_number;
+	const char* type;
+	double weight;
+	double cost;
+	const char* description;
+};
+
+class Torso : public RobotPart
+{
+public:
+	Torso();
+	int get_battery_components() { return battery_components; }
+private:
+	int battery_components;
+};
+
 class Customer
 {
 public:
@@ -86,13 +114,14 @@ void return_menu(Fl_Widget* window, void*)
 	main_logon->show();
 }
 
+Fl_Window* pm_main_menu;
 void PM_main_menu(Fl_Widget*, void*)
 {
 	main_logon->hide();
 
-	Fl_Window *main_menu = new Fl_Window(w_width, w_height, "Project Manager Menu");
+	pm_main_menu = new Fl_Window(w_width, w_height, "Project Manager Menu");
 
-	main_menu->callback(return_menu);
+	pm_main_menu->callback(return_menu);
 
 	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Logged in as: PM");
 
@@ -102,14 +131,15 @@ void PM_main_menu(Fl_Widget*, void*)
 	robot_parts->callback(create_robot_parts);
 	robot_model->callback(create_robot_model);
 
-	main_menu->end();
-	main_menu->show();
+	pm_main_menu->end();
+	pm_main_menu->show();
 
 	Fl::run();
 }
 
 void create_robot_model(Fl_Widget*, void*)
 {
+	pm_main_menu->hide();
 	Fl_Window *create_menu = new Fl_Window(w_width, w_height, "Select Part Menu");
 
 	Fl_Input *robot_name = new Fl_Input(140, 50, 150, 25, "Robot Model Name");
@@ -120,9 +150,12 @@ void create_robot_model(Fl_Widget*, void*)
 	Fl::run();
 }
 
+Fl_Window* robot_parts_menu;
+
 void create_robot_parts(Fl_Widget* test, void*)
 {
-	Fl_Window *create_menu = new Fl_Window(w_width, w_height, "Select Part Menu");
+	pm_main_menu->hide();
+	Fl_Window *robot_parts_menu = new Fl_Window(w_width, w_height, "Select Part Menu");
 
 	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Select Part to Create");
 
@@ -135,10 +168,23 @@ void create_robot_parts(Fl_Widget* test, void*)
 
 	//arm->callback(create_robot_parts);
 
-	create_menu->end();
-	create_menu->show();
+	robot_parts_menu->end();
+	robot_parts_menu->show();
 
 	Fl::run();
+}
+
+Fl_Window* torso_name_wizard;
+void create_torso(Fl_Widget*, void*)
+{
+	robot_parts_menu->hide();
+	torso_name_wizard = new Fl_Window(w_width, w_height, "Torso Name");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Name");
+
+	Fl_Input *name = new Fl_Input(200, 50, 150, 25, "");
+
+	torso_name_wizard->end();
+	torso_name_wizard->show();
 }
 
 void BC_main_menu(Fl_Widget*, void*)
@@ -224,7 +270,7 @@ void customer_done(Fl_Widget*, void*)
 	int size = customers.size();
 
 	printf("current customers: \n");
-	for(int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		printf("- %s\n", customers[i].get_name());
 	}
@@ -266,7 +312,7 @@ void assoc_done(Fl_Widget*, void*)
 
 	int size = assocs.size();
 	printf("current assocs: \n");
-	for(int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		printf("- %s\n", assocs[i].get_name());
 	}
