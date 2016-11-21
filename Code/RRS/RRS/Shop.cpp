@@ -5,6 +5,10 @@
 #include <FL/Fl_Menu_Bar.H> 
 #include <FL/Fl_Button.H> 
 #include <FL/Fl_Input.H>
+#include <string>
+#include <vector>
+
+using namespace std;
 
 //to have consistent window sizes
 #define w_width 300
@@ -12,12 +16,12 @@
 
 //prototypes
 void select_user(); //selects user
-void PM_main_menu(Fl_Widget*, void*); //displays menu for selected user
+
+void PM_main_menu(Fl_Widget*, void*); 
 void create_robot_parts(Fl_Widget*, void*);
 void create_robot_model(Fl_Widget*, void*);
 
 void BC_main_menu(Fl_Widget*, void*);
-
 
 void PB_main_menu(Fl_Widget*, void*);
 void create_new_customer(Fl_Widget*, void*);
@@ -27,6 +31,8 @@ void SA_main_menu(Fl_Widget*, void*);
 
 void return_menu(Fl_Widget* window, void*);
 void return_window(Fl_Window* window);
+
+vector<Customer> customers[50];
 
 //first_window
 Fl_Window *main_logon = new Fl_Window(w_width, w_height, "Logon");
@@ -176,11 +182,13 @@ void create_new_customer(Fl_Widget*, void*)
 
 	main_menu->callback(pb_close_window);
 
+	done->callback(create_customer_done, customer_name->value);
 	main_menu->end();
 	main_menu->show();
 
 	Fl::run();
 }
+
 
 void create_new_sales_assoc(Fl_Widget*, void*)
 {
@@ -192,10 +200,27 @@ void create_new_sales_assoc(Fl_Widget*, void*)
 
 	main_menu->callback(pb_close_window);
 
+	done->callback(create_assoc_done, assoc_name->value);
 	main_menu->end();
 	main_menu->show();
 
 	Fl::run();
+}
+
+void create_customer_done(Fl_Widget*, void* text)
+{
+	string name = ((char*)text);
+	Customer customer(name);
+	
+	customers.push_back(customer);
+}
+
+void create_assoc_done(Fl_Widget*, void* text)
+{
+	string name = ((char*)text);
+	SalesAssoc assoc(name);
+
+	customers.push_back(assoc);
 }
 
 void SA_main_menu(Fl_Widget*, void*)
@@ -216,6 +241,23 @@ void SA_main_menu(Fl_Widget*, void*)
 	Fl::run();
 }
 
+class Customer
+{
+public:
+	Customer(string p_name) : name(p_name) {}
+	string get_name() { return name; }
+private:
+	string name;
+};
+
+class SalesAssoc
+{
+public:
+	SalesAssoc(string p_name) : name(p_name) {}
+	string get_name() { return name; }
+private:
+	string name;
+};
 
 int main()
 {
