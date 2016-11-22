@@ -62,6 +62,29 @@ void arm_submit(Fl_Widget*, void*);
 void arm_max_speed_input_cb(Fl_Widget* text, void*);
 void arm_max_speed_next_cb(Fl_Widget*, void*);
 void arm_power_consumed_input_cb(Fl_Widget* number, void*);
+//		Create Battery
+void create_bat(Fl_Widget*, void*);
+void bat_name_next_cb(Fl_Widget*, void*);
+void bat_name_input_cb(Fl_Widget* text, void*);
+void bat_weight_input_cb(Fl_Widget* text, void*);
+void bat_weight_next_cb(Fl_Widget*, void*);
+void bat_cost_input_cb(Fl_Widget* text, void*);
+void bat_cost_next_cb(Fl_Widget*, void*);
+void bat_description_input_cb(Fl_Widget* text, void*);
+void bat_description_next_cb(Fl_Widget*, void*);
+void bat_submit(Fl_Widget*, void*);
+void bat_energy_input_cb(Fl_Widget* number, void*);
+//		Create Head
+void create_head(Fl_Widget*, void*);
+void head_name_next_cb(Fl_Widget*, void*);
+void head_name_input_cb(Fl_Widget* text, void*);
+void head_weight_input_cb(Fl_Widget* text, void*);
+void head_weight_next_cb(Fl_Widget*, void*);
+void head_cost_input_cb(Fl_Widget* text, void*);
+void head_cost_next_cb(Fl_Widget*, void*);
+void head_description_input_cb(Fl_Widget* text, void*);
+void head_description_next_cb(Fl_Widget*, void*);
+void head_submit(Fl_Widget*, void*);
 
 void create_robot_model(Fl_Widget*, void*);
 
@@ -173,7 +196,6 @@ const char* arm_name;
 double arm_weight;
 double arm_cost;
 const char* arm_description;
-double arm_max_speed;
 double arm_power_consumed;
 
 class Arm : public RobotPart
@@ -199,6 +221,61 @@ private:
 };
 
 vector<Arm> arms;
+
+const char* bat_name;
+double bat_weight;
+double bat_cost;
+const char* bat_description;
+double bat_energy;
+
+class Battery : public RobotPart
+{
+public:
+	Battery(const char* p_name, const char* p_description, double p_weight, double p_cost, double p_energy)
+	{
+		name = p_name;
+		description = p_description;
+		weight = p_weight;
+		cost = p_cost;
+		part_number = ++g_part_number;
+		type = "Battery";
+		energy = p_energy;
+		printf("Battery Created!\n");
+		printf(" name: %s\n part number: %d\n type: %s\n weight: %f\n cost: %f\n energy: %f\n", name, part_number, type, weight, cost, energy);
+	}
+
+	double get_energy() { return energy; }
+
+private:
+	double energy;
+};
+
+vector<Battery> batteries;
+
+const char* head_name;
+double head_weight;
+double head_cost;
+const char* head_description;
+
+class Head : public RobotPart
+{
+public:
+	Head(const char* p_name, const char* p_description, double p_weight, double p_cost)
+	{
+		name = p_name;
+		description = p_description;
+		weight = p_weight;
+		cost = p_cost;
+		part_number = ++g_part_number;
+		type = "Head";
+		printf("Head Created!\n");
+		printf(" name: %s\n part number: %d\n type: %s\n weight: %f\n cost: %f\n", name, part_number, type, weight, cost);
+	}
+
+private:
+};
+
+vector<Head> heads;
 
 class Customer
 {
@@ -317,12 +394,268 @@ void create_robot_parts(Fl_Widget* test, void*)
 	torso->callback(create_torso);
 	locomotor->callback(create_locomotor);
 	arm->callback(create_arm);
+	battery->callback(create_bat);
+	head->callback(create_head);
 
 	robot_parts_menu->end();
 	robot_parts_menu->show();
 
 	Fl::run();
 }
+
+/*-------------------------------Create Head--------------------------------------------------------*/
+
+Fl_Window* head_name_wizard;
+void create_head(Fl_Widget*, void*)
+{
+	robot_parts_menu->hide();
+	head_name_wizard = new Fl_Window(w_width, w_height, "Head Name");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Name");
+
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+
+	Fl_Input *name = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(head_name_next_cb);
+	name->callback(head_name_input_cb);
+	head_name_wizard->callback(parts_menu_closed);
+
+	head_name_wizard->end();
+	head_name_wizard->show();
+}
+
+void head_name_input_cb(Fl_Widget* text, void*)
+{
+	head_name = ((Fl_Input*)text)->value();
+	printf("Head name submitted: %s\n", head_name);
+}
+
+Fl_Window* head_weight_wizard;
+
+void head_name_next_cb(Fl_Widget*, void*)
+{
+	head_name_wizard->hide();
+
+	head_weight_wizard = new Fl_Window(w_width, w_height, "Head Weight");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Weight");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *weight = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(head_weight_next_cb);
+	weight->callback(head_weight_input_cb);
+	head_weight_wizard->callback(parts_menu_closed);
+
+	head_weight_wizard->end();
+	head_weight_wizard->show();
+}
+
+void head_weight_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_weight = ((Fl_Input*)text)->value();
+	head_weight = atof(c_weight);
+	printf("Head weight submitted: %f\n", head_weight);
+}
+
+Fl_Window* head_cost_wizard;
+void head_weight_next_cb(Fl_Widget*, void*)
+{
+	head_weight_wizard->hide();
+
+	head_cost_wizard = new Fl_Window(w_width, w_height, "Head Cost");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Cost $");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *cost = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(head_cost_next_cb);
+	cost->callback(head_cost_input_cb);
+	head_cost_wizard->callback(parts_menu_closed);
+
+	head_cost_wizard->end();
+	head_cost_wizard->show();
+}
+
+void head_cost_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_cost = ((Fl_Input*)text)->value();
+	head_cost = atof(c_cost);
+	printf("Head cost submitted: %f\n", head_cost);
+}
+
+Fl_Window* head_description_wizard;
+void head_cost_next_cb(Fl_Widget*, void*)
+{
+	head_cost_wizard->hide();
+
+	head_description_wizard = new Fl_Window(w_width, w_height, "Head Description");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(head_submit);
+	description->callback(head_description_input_cb);
+	head_description_wizard->callback(parts_menu_closed);
+
+	head_description_wizard->end();
+	head_description_wizard->show();
+}
+
+void head_description_input_cb(Fl_Widget* text, void*)
+{
+	head_description = ((Fl_Input*)text)->value();
+	printf("Head description submitted: %s\n", head_description);
+}
+
+void head_submit(Fl_Widget*, void*)
+{
+	head_description_wizard->hide();
+
+	Head head(head_name, head_description, head_weight, head_cost);
+	robot_parts_menu->show();
+	heads.push_back(head);
+	printf("Head added to head vector\n");
+}
+
+/*-------------------------------Create Battery-----------------------------------------------------*/
+
+Fl_Window* bat_name_wizard;
+void create_bat(Fl_Widget*, void*)
+{
+	robot_parts_menu->hide();
+	bat_name_wizard = new Fl_Window(w_width, w_height, "Battery Name");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Name");
+
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+
+	Fl_Input *name = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(bat_name_next_cb);
+	name->callback(bat_name_input_cb);
+	bat_name_wizard->callback(parts_menu_closed);
+
+	bat_name_wizard->end();
+	bat_name_wizard->show();
+}
+
+void bat_name_input_cb(Fl_Widget* text, void*)
+{
+	bat_name = ((Fl_Input*)text)->value();
+	printf("battery name submitted: %s\n", bat_name);
+}
+
+Fl_Window* bat_weight_wizard;
+
+void bat_name_next_cb(Fl_Widget*, void*)
+{
+	bat_name_wizard->hide();
+
+	bat_weight_wizard = new Fl_Window(w_width, w_height, "Battery Weight");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Weight");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *weight = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(bat_weight_next_cb);
+	weight->callback(bat_weight_input_cb);
+	bat_weight_wizard->callback(parts_menu_closed);
+
+	bat_weight_wizard->end();
+	bat_weight_wizard->show();
+}
+
+void bat_weight_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_weight = ((Fl_Input*)text)->value();
+	bat_weight = atof(c_weight);
+	printf("Battery weight submitted: %f\n", bat_weight);
+}
+
+Fl_Window* bat_cost_wizard;
+void bat_weight_next_cb(Fl_Widget*, void*)
+{
+	bat_weight_wizard->hide();
+
+	bat_cost_wizard = new Fl_Window(w_width, w_height, "Battery Cost");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Cost $");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *cost = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(bat_cost_next_cb);
+	cost->callback(bat_cost_input_cb);
+	bat_cost_wizard->callback(parts_menu_closed);
+
+	bat_cost_wizard->end();
+	bat_cost_wizard->show();
+}
+
+void bat_cost_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_cost = ((Fl_Input*)text)->value();
+	bat_cost = atof(c_cost);
+	printf("Battery cost submitted: %f\n", bat_cost);
+}
+
+Fl_Window* bat_description_wizard;
+void bat_cost_next_cb(Fl_Widget*, void*)
+{
+	bat_cost_wizard->hide();
+
+	bat_description_wizard = new Fl_Window(w_width, w_height, "Battery Description");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(bat_description_next_cb);
+	description->callback(bat_description_input_cb);
+	bat_description_wizard->callback(parts_menu_closed);
+
+	bat_description_wizard->end();
+	bat_description_wizard->show();
+}
+
+void bat_description_input_cb(Fl_Widget* text, void*)
+{
+	bat_description = ((Fl_Input*)text)->value();
+	printf("Battery description submitted: %s\n", bat_description);
+}
+
+Fl_Window* bat_energy_wizard;
+void bat_description_next_cb(Fl_Widget*, void*)
+{
+	bat_description_wizard->hide();
+
+	bat_energy_wizard = new Fl_Window(w_width, w_height, "Battery Energy");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Input Energy");
+	Fl_Button *submit = new Fl_Button(200, 250, 50, 30, "Submit");
+	Fl_Input* energy = new Fl_Input(50, 100, 200, 25, "");
+
+	submit->callback(bat_submit);
+	energy->callback(bat_energy_input_cb);
+
+	bat_energy_wizard->callback(parts_menu_closed);
+
+	bat_energy_wizard->end();
+	bat_energy_wizard->show();
+}
+
+void bat_energy_input_cb(Fl_Widget* number, void*)
+{
+	const char* c_energy = ((Fl_Input*)number)->value();
+	bat_energy = atof(c_energy);
+	printf("Battery energy submitted: %f\n", bat_energy);
+}
+
+void bat_submit(Fl_Widget*, void*)
+{
+	Battery battery(bat_name, bat_description, bat_weight, bat_cost, bat_energy);
+	bat_energy_wizard->hide();
+	robot_parts_menu->show();
+	batteries.push_back(battery);
+	printf("Battery added to battery vector\n");
+}
+
 /*-------------------------------Create Arm---------------------------------------------------------*/
 
 Fl_Window* arm_name_wizard;
