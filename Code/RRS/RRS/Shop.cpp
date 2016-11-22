@@ -34,6 +34,20 @@ void torso_description_input_cb(Fl_Widget* text, void*);
 void torso_description_next_cb(Fl_Widget*, void*);
 void torso_battery_input_cb(Fl_Widget*, void* number);
 void torso_submit(Fl_Widget*, void*);
+//		Create Locomotor
+void create_locomotor(Fl_Widget*, void*);
+void loco_name_next_cb(Fl_Widget*, void*);
+void loco_name_input_cb(Fl_Widget* text, void*);
+void loco_weight_input_cb(Fl_Widget* text, void*);
+void loco_weight_next_cb(Fl_Widget*, void*);
+void loco_cost_input_cb(Fl_Widget* text, void*);
+void loco_cost_next_cb(Fl_Widget*, void*);
+void loco_description_input_cb(Fl_Widget* text, void*);
+void loco_description_next_cb(Fl_Widget*, void*);
+void loco_submit(Fl_Widget*, void*);
+void loco_max_speed_input_cb(Fl_Widget* text, void*);
+void loco_max_speed_next_cb(Fl_Widget*, void*);
+void loco_power_consumed_input_cb(Fl_Widget* number, void*);
 
 void create_robot_model(Fl_Widget*, void*);
 
@@ -77,8 +91,9 @@ protected:
 	const char* description;
 };
 
+int g_part_number = 0;
+
 const char* torso_name;
-int torso_part_number = 0;
 double torso_weight;
 double torso_cost;
 const char* torso_description;
@@ -90,7 +105,7 @@ public:
 	Torso(const char* p_name, const char* p_description, double p_weight, double p_cost, int p_batteries)
 	{
 		name = p_name;
-		part_number = ++torso_part_number;
+		part_number = ++g_part_number;
 		type = "Torso";
 		weight = p_weight;
 		cost = p_cost;
@@ -105,6 +120,40 @@ private:
 };
 
 vector<Torso> torsos;
+
+const char* loco_name;
+double loco_weight;
+double loco_cost;
+const char* loco_description;
+double loco_max_speed;
+double loco_power_consumed;
+
+class Locomotor : public RobotPart
+{
+public:
+	Locomotor(const char* p_name, const char* p_description, double p_weight, double p_cost, double p_speed, double p_power)
+	{
+		name = p_name;
+		description = p_description;
+		weight = p_weight;
+		cost = p_cost;
+		part_number = ++g_part_number;
+		type = "Locomotor";
+		max_speed = p_speed;
+		power_consumed = p_power;
+		printf("Locomotor Created!\n");
+		printf(" name: %s\n part number: %d\n type: %s\n weight: %f\n cost: %f\n max speed: %f\n power consumed: %f\n", name, part_number, type, weight, cost, max_speed, power_consumed);
+	}
+
+	double get_max_speed() { return max_speed; }
+	double get_power_cosumed() { return power_consumed; }
+
+private:
+	double max_speed;
+	double power_consumed;
+};
+
+vector<Locomotor> locomotors;
 
 class Customer
 {
@@ -177,6 +226,20 @@ void PM_main_menu(Fl_Widget*, void*)
 	Fl::run();
 }
 
+void robot_parts_menu_closed(Fl_Widget* window, void*)
+{
+	pm_main_menu->show();
+	((Fl_Window*)window)->hide();
+}
+
+Fl_Window* robot_parts_menu;
+
+void parts_menu_closed(Fl_Widget* window, void*)
+{
+	robot_parts_menu->show();
+	((Fl_Window*)window)->hide();
+}
+
 void create_robot_model(Fl_Widget*, void*)
 {
 	pm_main_menu->hide();
@@ -190,7 +253,7 @@ void create_robot_model(Fl_Widget*, void*)
 	Fl::run();
 }
 
-Fl_Window* robot_parts_menu;
+
 void create_robot_parts(Fl_Widget* test, void*)
 {
 	pm_main_menu->hide();
@@ -207,6 +270,7 @@ void create_robot_parts(Fl_Widget* test, void*)
 	robot_parts_menu->callback(robot_parts_menu_closed);
 	
 	torso->callback(create_torso);
+	locomotor->callback(create_locomotor);
 
 	robot_parts_menu->end();
 	robot_parts_menu->show();
@@ -214,20 +278,177 @@ void create_robot_parts(Fl_Widget* test, void*)
 	Fl::run();
 }
 
-void robot_parts_menu_closed(Fl_Widget* window, void*)
+/*-------------------------------Create Locomotor---------------------------------------------------*/
+
+Fl_Window* loco_name_wizard;
+void create_locomotor(Fl_Widget*, void*)
 {
-	pm_main_menu->show();
-	((Fl_Window*)window)->hide();
+	robot_parts_menu->hide();
+	loco_name_wizard = new Fl_Window(w_width, w_height, "Locomotor Name");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Name");
+
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+
+	Fl_Input *name = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(loco_name_next_cb);
+	name->callback(loco_name_input_cb);
+	loco_name_wizard->callback(parts_menu_closed);
+
+	loco_name_wizard->end();
+	loco_name_wizard->show();
 }
 
-void parts_menu_closed(Fl_Widget* window, void*)
+void loco_name_input_cb(Fl_Widget* text, void*)
 {
-	robot_parts_menu->show();
-	((Fl_Window*)window)->hide();
+	loco_name = ((Fl_Input*)text)->value();
+	printf("Locomotor name submitted: %s\n", loco_name);
 }
+
+Fl_Window* loco_weight_wizard;
+
+void loco_name_next_cb(Fl_Widget*, void*)
+{
+	loco_name_wizard->hide();
+
+	loco_weight_wizard = new Fl_Window(w_width, w_height, "Locomotor Weight");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Weight");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *weight = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(loco_weight_next_cb);
+	weight->callback(loco_weight_input_cb);
+	loco_weight_wizard->callback(parts_menu_closed);
+
+	loco_weight_wizard->end();
+	loco_weight_wizard->show();
+}
+
+void loco_weight_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_weight = ((Fl_Input*)text)->value();
+	loco_weight = atof(c_weight);
+	printf("Locomotor weight submitted: %f\n", loco_weight);
+}
+
+Fl_Window* loco_cost_wizard;
+void loco_weight_next_cb(Fl_Widget*, void*)
+{
+	loco_weight_wizard->hide();
+
+	loco_cost_wizard = new Fl_Window(w_width, w_height, "Locomotor Cost");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Cost $");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *cost = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(loco_cost_next_cb);
+	cost->callback(loco_cost_input_cb);
+	loco_cost_wizard->callback(parts_menu_closed);
+
+	loco_cost_wizard->end();
+	loco_cost_wizard->show();
+}
+
+void loco_cost_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_cost = ((Fl_Input*)text)->value();
+	loco_cost = atof(c_cost);
+	printf("Locomotor cost submitted: %f\n", loco_cost);
+}
+
+Fl_Window* loco_description_wizard;
+void loco_cost_next_cb(Fl_Widget*, void*)
+{
+	loco_cost_wizard->hide();
+
+	loco_description_wizard = new Fl_Window(w_width, w_height, "Locomotor Description");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(loco_description_next_cb);
+	description->callback(loco_description_input_cb);
+	loco_description_wizard->callback(parts_menu_closed);
+
+	loco_description_wizard->end();
+	loco_description_wizard->show();
+}
+
+void loco_description_input_cb(Fl_Widget* text, void*)
+{
+	loco_description = ((Fl_Input*)text)->value();
+	printf("Locomotor description submitted: %s\n", loco_description);
+}
+
+Fl_Window* loco_max_speed_wizard;
+void loco_description_next_cb(Fl_Widget*, void*)
+{
+	loco_description_wizard->hide();
+
+	loco_max_speed_wizard = new Fl_Window(w_width, w_height, "Locomotor Max Speed");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Input Max Speed");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input* speed = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(loco_max_speed_next_cb);
+	speed->callback(loco_max_speed_input_cb);
+
+	loco_max_speed_wizard->callback(parts_menu_closed);
+
+	loco_max_speed_wizard->end();
+	loco_max_speed_wizard->show();
+}
+
+void loco_max_speed_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_speed = ((Fl_Input*)text)->value();
+	loco_max_speed = atof(c_speed);
+	printf("max speed: %f", loco_max_speed);
+}
+
+
+Fl_Window* loco_power_consumed_wizard;
+void loco_max_speed_next_cb(Fl_Widget*, void*)
+{
+	loco_max_speed_wizard->hide();
+
+
+	loco_power_consumed_wizard = new Fl_Window(w_width, w_height, "Locomotor Power Consumed");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Input Power Consumed");
+	Fl_Button *submit = new Fl_Button(200, 250, 50, 30, "Submit");
+	Fl_Input* speed = new Fl_Input(50, 100, 200, 25, "");
+
+	submit->callback(loco_submit);
+	speed->callback(loco_power_consumed_input_cb);
+
+	loco_power_consumed_wizard->callback(parts_menu_closed);
+
+	loco_power_consumed_wizard->end();
+	loco_power_consumed_wizard->show();
+}
+
+void loco_power_consumed_input_cb(Fl_Widget* number, void*)
+{
+	const char* c_power_consumed = ((Fl_Input*)number)->value();
+	loco_power_consumed = atof(c_power_consumed);
+	printf("Loco power consumed submitted: %d\n", loco_power_consumed);
+}
+
+void loco_submit(Fl_Widget*, void*)
+{
+	Locomotor loco(loco_name, loco_description, loco_weight, loco_cost, loco_max_speed, loco_power_consumed);
+	loco_power_consumed_wizard->hide();
+	robot_parts_menu->show();
+	locomotors.push_back(loco);
+	printf("Locomotor added to loco vector\n");
+}
+
+/*-------------------------------------Create Torso--------------------------------------------------*/
 
 Fl_Window* torso_name_wizard;
-
 void create_torso(Fl_Widget*, void*)
 {
 	robot_parts_menu->hide();
