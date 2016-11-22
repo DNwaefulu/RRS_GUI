@@ -15,10 +15,14 @@ using namespace std;
 
 //prototypes
 void select_user();
+
+//PM Menu
 void PM_main_menu(Fl_Widget*, void*); 
+//	Choose Between RobotParts and RobotModels
 void create_robot_parts(Fl_Widget*, void*);
 void robot_parts_menu_closed(Fl_Widget* window, void*);
 
+//		Create Torso
 void create_torso(Fl_Widget*, void*);
 void torso_name_next_cb(Fl_Widget*, void*);
 void torso_name_input_cb(Fl_Widget* text, void*);
@@ -28,6 +32,8 @@ void torso_cost_input_cb(Fl_Widget* text, void*);
 void torso_cost_next_cb(Fl_Widget*, void*);
 void torso_description_input_cb(Fl_Widget* text, void*);
 void torso_description_next_cb(Fl_Widget*, void*);
+void torso_battery_input_cb(Fl_Widget*, void* number);
+void torso_submit(Fl_Widget*, void*);
 
 void create_robot_model(Fl_Widget*, void*);
 
@@ -51,7 +57,10 @@ Fl_Window *main_logon = new Fl_Window(w_width, w_height, "Logon");
 
 class RobotPart {
 public:
-	RobotPart();
+	RobotPart()
+	{
+
+	}
 
 	const char* get_name();
 	const char* get_part_number();
@@ -61,21 +70,41 @@ public:
 	const char* get_description();
 protected:
 	const char* name;
-	const char* part_number;
-	const char* type = "Torso";
+	int part_number;
+	const char* type;
 	double weight;
 	double cost;
 	const char* description;
 };
 
+const char* torso_name;
+int torso_part_number = 0;
+double torso_weight;
+double torso_cost;
+const char* torso_description;
+int torso_battery_components = 1;
+
 class Torso : public RobotPart
 {
 public:
-	Torso();
+	Torso(const char* p_name, const char* p_description, double p_weight, double p_cost, int p_batteries)
+	{
+		name = p_name;
+		part_number = ++torso_part_number;
+		type = "Torso";
+		weight = p_weight;
+		cost = p_cost;
+		battery_components = p_batteries;
+		printf("Torso Created!\n");
+		printf(" name: %s\n part number: %d\n type: %s\n weight: %f\n cost: %f\n battery components: %d\n", name, part_number, type, weight, cost, battery_components);
+	}
+
 	int get_battery_components() { return battery_components; }
 private:
 	int battery_components;
 };
+
+vector<Torso> torsos;
 
 class Customer
 {
@@ -199,13 +228,6 @@ void parts_menu_closed(Fl_Widget* window, void*)
 
 Fl_Window* torso_name_wizard;
 
-const char* torso_name;
-const char* torso_part_number = 0;
-double torso_weight;
-double torso_cost;
-const char* torso_description;
-int battery_components;
-
 void create_torso(Fl_Widget*, void*)
 {
 	robot_parts_menu->hide();
@@ -312,17 +334,39 @@ void torso_description_next_cb(Fl_Widget*, void*)
 {
 	torso_description_wizard->hide();
 
-	torso_battery_wizard = new Fl_Window(w_width, w_height, "Torso Description");
-	/*Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
-	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
-	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+	torso_battery_wizard = new Fl_Window(w_width, w_height, "Torso Batteries");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Select How Many Batteries");
+	Fl_Button *submit = new Fl_Button(200, 250, 50, 30, "Submit");
+	Fl_Button *one = new Fl_Button(125, 100, 50, 30, "1");
+	Fl_Button *two = new Fl_Button(125, 150, 50, 30, "2");
+	Fl_Button *three = new Fl_Button(125, 200, 50, 30, "3");
 
-	next->callback(torso_description_next_cb);
-	description->callback(torso_description_input_cb);
+	submit->callback(torso_submit);
+
+	one->callback(torso_battery_input_cb, "1");
+	two->callback(torso_battery_input_cb, "2");
+	three->callback(torso_battery_input_cb, "3");
+
 	torso_cost_wizard->callback(parts_menu_closed);
-	*/
+	
 	torso_battery_wizard->end();
 	torso_battery_wizard->show();
+}
+
+void torso_battery_input_cb(Fl_Widget*, void* number)
+{
+	const char* c_batteries = ((const char*)number);
+	torso_battery_components = atoi(c_batteries);
+	printf("Torso battery components submitted: %d\n", torso_battery_components);
+}
+
+void torso_submit(Fl_Widget*, void*)
+{
+	Torso torso(torso_name, torso_description, torso_weight, torso_cost, torso_battery_components);
+	torso_battery_wizard->hide();
+	robot_parts_menu->show();
+	torsos.push_back(torso);
+	printf("torso added to torso vector\n");
 }
 
 void BC_main_menu(Fl_Widget*, void*)
