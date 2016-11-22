@@ -48,6 +48,20 @@ void loco_submit(Fl_Widget*, void*);
 void loco_max_speed_input_cb(Fl_Widget* text, void*);
 void loco_max_speed_next_cb(Fl_Widget*, void*);
 void loco_power_consumed_input_cb(Fl_Widget* number, void*);
+//		Create Arm
+void create_arm(Fl_Widget*, void*);
+void arm_name_next_cb(Fl_Widget*, void*);
+void arm_name_input_cb(Fl_Widget* text, void*);
+void arm_weight_input_cb(Fl_Widget* text, void*);
+void arm_weight_next_cb(Fl_Widget*, void*);
+void arm_cost_input_cb(Fl_Widget* text, void*);
+void arm_cost_next_cb(Fl_Widget*, void*);
+void arm_description_input_cb(Fl_Widget* text, void*);
+void arm_description_next_cb(Fl_Widget*, void*);
+void arm_submit(Fl_Widget*, void*);
+void arm_max_speed_input_cb(Fl_Widget* text, void*);
+void arm_max_speed_next_cb(Fl_Widget*, void*);
+void arm_power_consumed_input_cb(Fl_Widget* number, void*);
 
 void create_robot_model(Fl_Widget*, void*);
 
@@ -154,6 +168,37 @@ private:
 };
 
 vector<Locomotor> locomotors;
+
+const char* arm_name;
+double arm_weight;
+double arm_cost;
+const char* arm_description;
+double arm_max_speed;
+double arm_power_consumed;
+
+class Arm : public RobotPart
+{
+public:
+	Arm(const char* p_name, const char* p_description, double p_weight, double p_cost, double p_power)
+	{
+		name = p_name;
+		description = p_description;
+		weight = p_weight;
+		cost = p_cost;
+		part_number = ++g_part_number;
+		type = "Arm";
+		power_consumed = p_power;
+		printf("Arm Created!\n");
+		printf(" name: %s\n part number: %d\n type: %s\n weight: %f\n cost: %f\n power consumed: %f\n", name, part_number, type, weight, cost, power_consumed);
+	}
+
+	double get_power_cosumed() { return power_consumed; }
+
+private:
+	double power_consumed;
+};
+
+vector<Arm> arms;
 
 class Customer
 {
@@ -271,11 +316,150 @@ void create_robot_parts(Fl_Widget* test, void*)
 	
 	torso->callback(create_torso);
 	locomotor->callback(create_locomotor);
+	arm->callback(create_arm);
 
 	robot_parts_menu->end();
 	robot_parts_menu->show();
 
 	Fl::run();
+}
+/*-------------------------------Create Arm---------------------------------------------------------*/
+
+Fl_Window* arm_name_wizard;
+void create_arm(Fl_Widget*, void*)
+{
+	robot_parts_menu->hide();
+	arm_name_wizard = new Fl_Window(w_width, w_height, "Arm Name");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Name");
+
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+
+	Fl_Input *name = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(arm_name_next_cb);
+	name->callback(arm_name_input_cb);
+	arm_name_wizard->callback(parts_menu_closed);
+
+	arm_name_wizard->end();
+	arm_name_wizard->show();
+}
+
+void arm_name_input_cb(Fl_Widget* text, void*)
+{
+	arm_name = ((Fl_Input*)text)->value();
+	printf("arm name submitted: %s\n", arm_name);
+}
+
+Fl_Window* arm_weight_wizard;
+
+void arm_name_next_cb(Fl_Widget*, void*)
+{
+	arm_name_wizard->hide();
+
+	arm_weight_wizard = new Fl_Window(w_width, w_height, "Arm Weight");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Weight");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *weight = new Fl_Input(50, 100, 200, 25, "");
+
+
+	next->callback(arm_weight_next_cb);
+	weight->callback(arm_weight_input_cb);
+	arm_weight_wizard->callback(parts_menu_closed);
+
+	arm_weight_wizard->end();
+	arm_weight_wizard->show();
+}
+
+void arm_weight_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_weight = ((Fl_Input*)text)->value();
+	arm_weight = atof(c_weight);
+	printf("Arm weight submitted: %f\n", arm_weight);
+}
+
+Fl_Window* arm_cost_wizard;
+void arm_weight_next_cb(Fl_Widget*, void*)
+{
+	arm_weight_wizard->hide();
+
+	arm_cost_wizard = new Fl_Window(w_width, w_height, "Arm Cost");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Cost $");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *cost = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(arm_cost_next_cb);
+	cost->callback(arm_cost_input_cb);
+	arm_cost_wizard->callback(parts_menu_closed);
+
+	arm_cost_wizard->end();
+	arm_cost_wizard->show();
+}
+
+void arm_cost_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_cost = ((Fl_Input*)text)->value();
+	arm_cost = atof(c_cost);
+	printf("Arm cost submitted: %f\n", arm_cost);
+}
+
+Fl_Window* arm_description_wizard;
+void arm_cost_next_cb(Fl_Widget*, void*)
+{
+	arm_cost_wizard->hide();
+
+	arm_description_wizard = new Fl_Window(w_width, w_height, "Arm Description");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(arm_description_next_cb);
+	description->callback(arm_description_input_cb);
+	arm_description_wizard->callback(parts_menu_closed);
+
+	arm_description_wizard->end();
+	arm_description_wizard->show();
+}
+
+void arm_description_input_cb(Fl_Widget* text, void*)
+{
+	arm_description = ((Fl_Input*)text)->value();
+	printf("arm description submitted: %s\n", arm_description);
+}
+
+Fl_Window* arm_power_consumed_wizard;
+void arm_description_next_cb(Fl_Widget*, void*)
+{
+	arm_description_wizard->hide();
+
+	arm_power_consumed_wizard = new Fl_Window(w_width, w_height, "Arm Power Consumed");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Input Power Consumed");
+	Fl_Button *submit = new Fl_Button(200, 250, 50, 30, "Submit");
+	Fl_Input* speed = new Fl_Input(50, 100, 200, 25, "");
+
+	submit->callback(arm_submit);
+	speed->callback(arm_power_consumed_input_cb);
+
+	arm_power_consumed_wizard->callback(parts_menu_closed);
+
+	arm_power_consumed_wizard->end();
+	arm_power_consumed_wizard->show();
+}
+
+void arm_power_consumed_input_cb(Fl_Widget* number, void*)
+{
+	const char* c_power_consumed = ((Fl_Input*)number)->value();
+	arm_power_consumed = atof(c_power_consumed);
+	printf("Arm power consumed submitted: %d\n", arm_power_consumed);
+}
+
+void arm_submit(Fl_Widget*, void*)
+{
+	Arm arm(arm_name, arm_description, arm_weight, arm_cost, arm_power_consumed);
+	arm_power_consumed_wizard->hide();
+	robot_parts_menu->show();
+	arms.push_back(arm);
+	printf("Arm added to arm vector\n");
 }
 
 /*-------------------------------Create Locomotor---------------------------------------------------*/
