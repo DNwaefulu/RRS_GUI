@@ -14,15 +14,24 @@ using namespace std;
 #define w_height 300
 
 //prototypes
-void select_user(); //selects user
-void PM_main_menu(Fl_Widget*, void*); //displays menu for selected user
+void select_user();
+void PM_main_menu(Fl_Widget*, void*); 
 void create_robot_parts(Fl_Widget*, void*);
 void robot_parts_menu_closed(Fl_Widget* window, void*);
+
 void create_torso(Fl_Widget*, void*);
+void torso_name_next_cb(Fl_Widget*, void*);
+void torso_name_input_cb(Fl_Widget* text, void*);
+void torso_weight_input_cb(Fl_Widget* text, void*);
+void torso_weight_next_cb(Fl_Widget*, void*);
+void torso_cost_input_cb(Fl_Widget* text, void*);
+void torso_cost_next_cb(Fl_Widget*, void*);
+void torso_description_input_cb(Fl_Widget* text, void*);
+void torso_description_next_cb(Fl_Widget*, void*);
+
 void create_robot_model(Fl_Widget*, void*);
 
 void BC_main_menu(Fl_Widget*, void*);
-
 
 void PB_main_menu(Fl_Widget*, void*);
 void create_new_customer(Fl_Widget*, void*);
@@ -53,7 +62,7 @@ public:
 protected:
 	const char* name;
 	const char* part_number;
-	const char* type;
+	const char* type = "Torso";
 	double weight;
 	double cost;
 	const char* description;
@@ -182,9 +191,20 @@ void robot_parts_menu_closed(Fl_Widget* window, void*)
 	((Fl_Window*)window)->hide();
 }
 
+void parts_menu_closed(Fl_Widget* window, void*)
+{
+	robot_parts_menu->show();
+	((Fl_Window*)window)->hide();
+}
+
 Fl_Window* torso_name_wizard;
 
 const char* torso_name;
+const char* torso_part_number = 0;
+double torso_weight;
+double torso_cost;
+const char* torso_description;
+int battery_components;
 
 void create_torso(Fl_Widget*, void*)
 {
@@ -196,8 +216,113 @@ void create_torso(Fl_Widget*, void*)
 
 	Fl_Input *name = new Fl_Input(50, 100, 200, 25, "");
 
+
+	next->callback(torso_name_next_cb);
+	name->callback(torso_name_input_cb);
+	torso_name_wizard->callback(parts_menu_closed);
+
 	torso_name_wizard->end();
 	torso_name_wizard->show();
+}
+
+void torso_name_input_cb(Fl_Widget* text, void*)
+{
+	torso_name = ((Fl_Input*)text)->value();
+	printf("Torso name submitted: %s\n", torso_name);
+}
+
+Fl_Window* torso_weight_wizard;
+
+void torso_name_next_cb(Fl_Widget*, void*)
+{
+	torso_name_wizard->hide();
+	
+	torso_weight_wizard = new Fl_Window(w_width, w_height, "Torso Weight");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Weight");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *weight = new Fl_Input(50, 100, 200, 25, "");
+
+	
+	next->callback(torso_weight_next_cb);
+	weight->callback(torso_weight_input_cb);
+	torso_weight_wizard->callback(parts_menu_closed);
+
+	torso_weight_wizard->end();
+	torso_weight_wizard->show();
+}
+
+void torso_weight_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_weight = ((Fl_Input*)text)->value();
+	torso_weight = atof(c_weight);
+	printf("Torso weight submitted: %f\n", torso_weight);
+}
+
+Fl_Window* torso_cost_wizard;
+void torso_weight_next_cb(Fl_Widget*, void*)
+{
+	torso_weight_wizard->hide();
+
+	torso_cost_wizard = new Fl_Window(w_width, w_height, "Torso Cost");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Cost $");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *cost = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(torso_cost_next_cb);
+	cost->callback(torso_cost_input_cb);
+	torso_cost_wizard->callback(parts_menu_closed);
+
+	torso_cost_wizard->end();
+	torso_cost_wizard->show();
+}
+
+void torso_cost_input_cb(Fl_Widget* text, void*)
+{
+	const char* c_cost = ((Fl_Input*)text)->value();
+	torso_cost = atof(c_cost);
+	printf("Torso cost submitted: %f\n", torso_cost);
+}
+
+Fl_Window* torso_description_wizard;
+void torso_cost_next_cb(Fl_Widget*, void*)
+{
+	torso_cost_wizard->hide();
+
+	torso_description_wizard = new Fl_Window(w_width, w_height, "Torso Description");
+	Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(torso_description_next_cb);
+	description->callback(torso_description_input_cb);
+	torso_cost_wizard->callback(parts_menu_closed);
+
+	torso_description_wizard->end();
+	torso_description_wizard->show();
+}
+
+void torso_description_input_cb(Fl_Widget* text, void*)
+{
+	torso_description = ((Fl_Input*)text)->value();
+	printf("Torso description submitted: %s\n", torso_description);
+}
+
+Fl_Window* torso_battery_wizard;
+void torso_description_next_cb(Fl_Widget*, void*)
+{
+	torso_description_wizard->hide();
+
+	torso_battery_wizard = new Fl_Window(w_width, w_height, "Torso Description");
+	/*Fl_Box *text = new Fl_Box(0, 0, 300, 75, "Enter Part Description");
+	Fl_Button *next = new Fl_Button(200, 250, 50, 30, "Next");
+	Fl_Input *description = new Fl_Input(50, 100, 200, 25, "");
+
+	next->callback(torso_description_next_cb);
+	description->callback(torso_description_input_cb);
+	torso_cost_wizard->callback(parts_menu_closed);
+	*/
+	torso_battery_wizard->end();
+	torso_battery_wizard->show();
 }
 
 void BC_main_menu(Fl_Widget*, void*)
@@ -354,8 +479,6 @@ void SA_main_menu(Fl_Widget*, void*)
 
 	Fl::run();
 }
-
-
 
 int main()
 {
